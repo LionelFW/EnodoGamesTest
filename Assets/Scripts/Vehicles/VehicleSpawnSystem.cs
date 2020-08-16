@@ -6,6 +6,8 @@ using Unity.Mathematics;
 using Unity.Transforms;
 using Utils;
 
+//This system is not used, as we spawn Vehicles in a MonoBehaviour.
+//This should be updated as to move closer to a Pure ECS architecture.
 public class VehicleSpawnSystem : ComponentSystem
 {
     protected override void OnUpdate()

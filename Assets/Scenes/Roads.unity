@@ -352,7 +352,6 @@ GameObject:
   - component: {fileID: 1018213027}
   - component: {fileID: 1018213026}
   - component: {fileID: 1018213025}
-  - component: {fileID: 1018213024}
   m_Layer: 0
   m_Name: EditZone
   m_TagString: EditZone
@@ -360,18 +359,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1018213024
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1018213023}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 275ec92c5f4e12e46bc37fc4ca4d5908, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &1018213025
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -388,6 +375,7 @@ MonoBehaviour:
   waypointMaterial: {fileID: 2100000, guid: fbc36e52b1d72a44fa97afb8a11763ec, type: 2}
   vehicleMesh: {fileID: 4300000, guid: 2dfd189627cfe43479265db2e35e552c, type: 3}
   vehicleMaterial: {fileID: 2100000, guid: 62e25ef75a2216f418d06453c9ad15cb, type: 2}
+  spawnRate: 0.2
 --- !u!64 &1018213026
 MeshCollider:
   m_ObjectHideFlags: 0
@@ -420,7 +408,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
+  - {fileID: 2100000, guid: ee25570ddbfaf534da8d5e6e41d8a0a5, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0

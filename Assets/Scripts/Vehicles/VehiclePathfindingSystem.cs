@@ -24,19 +24,17 @@ public class VehiclePathfindingSystem : SystemBase
 
     protected override void OnUpdate()
     {
-        var waypointCompType = GetArchetypeChunkComponentType<WaypointComponent>();
+
+        // Because Waypoints and Vehicles are different entities, we first obtain the chunks that contain the Waypoint Components. Those chunks will be passed to the VehiclePathfindingJob.
+        // This job will in turn use components of the Vehicle Entity, and iterate on both of those chunks to read and write data.
         var chunks = GetEntityQuery(ComponentType.ReadOnly<WaypointComponent>()).CreateArchetypeChunkArray(Unity.Collections.Allocator.TempJob);
         var deltaTime = Time.DeltaTime;
 
+        //Marking ArchetypeChunkComponentTypes as ReadOnly is important for performance
         var translationType = GetArchetypeChunkComponentType<Translation>(true);
         var destinationType = GetArchetypeChunkComponentType<VehicleDestinationComponent>(false);
-        var speedType = GetArchetypeChunkComponentType<VehicleSpeedComponent>(true);
         var waypointType = GetArchetypeChunkComponentType<WaypointComponent>(true);
-        var rotationType = GetArchetypeChunkComponentType<Rotation>(false);
-        var ltwType = GetArchetypeChunkComponentType<LocalToWorld>(true);
         var waypointIdBufferType = GetArchetypeChunkBufferType<WaypointIdBufferElement>(false);
-
-        //ComponentDataFromEntity<Translation> translationType = GetComponentDataFromEntity<Translation>(true);
 
         var job = new VehiclePathfindingJob()
         {
@@ -51,40 +49,8 @@ public class VehiclePathfindingSystem : SystemBase
         this.Dependency = job.Schedule(m_Query, this.Dependency);
         this.Dependency.Complete();
         
+        //Disposing of NativeArrays ensure that no memory leak happens.
         if (chunks.IsCreated) chunks.Dispose();
-        
-
-        //Entities.ForEach((ref Translation translation, ref VehicleDestinationComponent vehicleDestination, in VehicleSpeedComponent vehicleSpeed) =>
-        //{
-
-        //    int currentClosestWaypointId = -1;
-        //    float currentDistanceToClosest = float.MaxValue;
-        //    float3 direction = new float3();
-        //    for (int i = 0; i < chunks.Length; i++)
-        //    {
-        //        var chunk = chunks[i];
-        //        var waypoints = chunk.GetNativeArray(waypointCompType);
-        //        var translations = chunk.GetNativeArray(translationType);
-
-
-
-        //        float currentDistance = math.distance(translation.Value, translations[i].Value);
-
-        //        if (currentDistance < currentDistanceToClosest && vehicleDestination.previousWaypointId != waypoints[i].id)
-        //        {
-        //            currentDistanceToClosest = currentDistance;
-        //            currentClosestWaypointId = waypoints[i].id;
-        //            direction = translations[i].Value;
-        //        }
-        //        translations.Dispose();
-        //        waypoints.Dispose();
-        //    }
-
-        //    if (currentClosestWaypointId != -1) vehicleDestination.nextWaypointId = currentClosestWaypointId;
-        //    translation.Value += direction * deltaTime * vehicleSpeed.speed;
-
-        //}).ScheduleParallel();
-        //chunks.Dispose();
     }
 
     public struct VehiclePathfindingJob : IJobChunk
@@ -94,7 +60,6 @@ public class VehiclePathfindingSystem : SystemBase
         [ReadOnly] public ArchetypeChunkComponentType<Translation> translationType;
         public ArchetypeChunkComponentType<VehicleDestinationComponent> destinationType;
         [ReadOnly] public ArchetypeChunkComponentType<WaypointComponent> waypointType;
-        //public ArchetypeChunkComponentType<WaypointComponent> waypointType;
         [ReadOnly] public NativeArray<ArchetypeChunk> waypointChunks;
         public ArchetypeChunkBufferType<WaypointIdBufferElement> waypointIdBufferType;
 
@@ -108,11 +73,13 @@ public class VehiclePathfindingSystem : SystemBase
 
             NativeArray<WaypointComponent> waypointChunk;
 
-
+            // First, we iterate on the chunks with the Translation component, the VehicleDestinationComponent, and the WaypointId DynamicBuffers.
             for (int i = 0; i < chunk.Count; i++)
             {
                 bool hasReachedDestination = false;
                 if (chunkDestination[i].hasReachedDestination) continue;
+
+                // Then, we iterate on the chunks with the Waypoint component. We compare the next destination id and the current waypoint id.
                 for (int j = 0; j < waypointChunks.Length; j++)
                 {
                     waypointChunk = waypointChunks[j].GetNativeArray<WaypointComponent>(waypointType);
@@ -136,7 +103,8 @@ public class VehiclePathfindingSystem : SystemBase
                         
                         
                     }
-                    //Je ne comprends pas pourquoi Disposer de ces NativeArrays lance des erreurs d'allocation incorrecte... 
+
+                    //Why can't we dispose of NativeArrays obtained via GetNativeArray() without throwing exceptions ?
                     //InvalidOperationException: The NativeArray can not be Disposed because it was not allocated with a valid allocator.
                     //waypointChunk.Dispose();
                 }
